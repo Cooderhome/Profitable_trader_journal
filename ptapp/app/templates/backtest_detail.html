@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <a href="{{ url_for('backtest.list_backtests') }}" class="btn btn-outline-secondary mb-3">&larr; Back to Backtests</a>
+
+    <div class="card shadow-lg p-4">
+        <h4 class="mb-3">Backtest — {{ entry.pair }} ({{ entry.created_at.strftime('%Y-%m-%d') }})</h4>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="text-primary">Before Trade</h5>
+                <!-- {% if entry.before_image %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ entry.before_image) }}" class="img-fluid rounded shadow-sm mb-3">
+                {% endif %} -->
+                <p><strong>Entry:</strong> {{ entry.entry_price }}</p>
+                <p><strong>Exit:</strong> {{ entry.exit_price }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <h5 class="text-success">After Trade</h5>
+                <p><strong>After Image:</strong></p>
+                {% if entry.image_filename  %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ entry.image_filename ) }}" class="img-fluid rounded shadow-sm mb-3">
+                {% endif %}
+                <p><strong>Notes:</strong></p>
+                <div class="bg-light p-3 border rounded">
+                    {{ entry.notes or "No notes added." }}
+                </div>
+                <p class="mt-2"><strong>Result:</strong>
+                    {% if entry.result.lower() == 'win' %}
+                        <span class="text-success fw-bold">Win</span>
+                    {% else %}
+                        <span class="text-danger fw-bold">Loss</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

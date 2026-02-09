@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block title %}New Entry{% endblock %}
+{% block header %}New Trade Entry{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">📘 New Journal Entry</h2>
+{% if form.errors %}
+<div class="alert alert-danger">
+  <ul class="mb-0">
+    {% for field, errors in form.errors.items() %}
+    {% for error in errors %}
+    <li>{{ field }}: {{ error }}</li>
+    {% endfor %}
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+<form method="POST" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}
+
+  <div class="grid grid-2" style="@media(max-width:1000px){grid-template-columns:1fr;}">
+    <!-- Pre-Trade Section -->
+    <div class="card">
+      <h3 class="mb-4 text-accent border-bottom pb-2" style="border-color:var(--border-color); color:var(--accent);">
+        Pre-Trade Plan</h3>
+
+      <div class="grid grid-2">
+        <div class="form-group">
+          {{ form.pair.label(class="form-label") }}
+          {{ form.pair(class="form-control", placeholder="e.g. BTCUSD") }}
+        </div>
+        <div class="form-group">
+          {{ form.direction.label(class="form-label") }}
+          {{ form.direction(class="form-control") }} <!-- Select field styled by CSS -->
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="form-group">
+          {{ form.entry_price.label(class="form-label") }}
+          {{ form.entry_price(class="form-control") }}
+        </div>
+        <div class="form-group">
+          {{ form.lot_size.label(class="form-label") }}
+          {{ form.lot_size(class="form-control") }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        {{ form.risk_amount.label(class="form-label") }}
+        {{ form.risk_amount(class="form-control", placeholder="$ Risk") }}
+      </div>
+
+      <div class="grid grid-2">
+        <div class="form-group">
+          {{ form.stop_loss.label(class="form-label") }}
+          {{ form.stop_loss(class="form-control") }}
+        </div>
+        {{ form.take_profit(class="form-control") }}
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="form-group">
+        {{ form.risk_reward.label(class="form-label") }}
+        {{ form.risk_reward(class="form-control", placeholder="e.g. 2.5") }}
+      </div>
+      <div class="form-group">
+        {{ form.strategy.label(class="form-label") }}
+        {{ form.strategy(class="form-control", placeholder="e.g. Trend Following") }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      {{ form.news_event.label(class="form-label") }}
+      {{ form.news_event(class="form-control", placeholder="e.g. NFP, FOMC") }}
+    </div>
+
+    <div class="form-group">
+      {{ form.pre_trade_analysis.label(class="form-label") }}
+      {{ form.pre_trade_analysis(class="form-control", rows=4, style="height:auto;") }}
+    </div>
+
+    <div class="form-group">
+      {{ form.before_image.label(class="form-label") }}
+      {{ form.before_image(class="form-control", style="padding:0.5rem;") }}
+    </div>
+
+    <div class="form-group" style="margin-top: 2rem;">
+      <h4 class="text-sm font-bold border-bottom pb-2 mb-3">Process Checklist</h4>
+      <div class="flex items-center gap-2 mb-2">
+        {{ form.news_checked(style="width:18px; height:18px;") }}
+        <label for="news_checked" class="form-label mb-0">Checked economic calendar?</label>
+      </div>
+      <div class="flex items-center gap-2">
+        {{ form.rules_followed(style="width:18px; height:18px;") }}
+        <label for="rules_followed" class="form-label mb-0">Strategy rules matched?</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post-Trade Section -->
+  <div class="card">
+    <h3 class="mb-4 border-bottom pb-2" style="border-color:var(--border-color); color:var(--success);">Post-Trade
+      Results</h3>
+    <p class="text-sm text-muted mb-4">Fill this section after closing the trade.</p>
+
+    <div class="grid grid-2">
+      <div class="form-group">
+        {{ form.result.label(class="form-label") }}
+        {{ form.result(class="form-control") }}
+      </div>
+      <div class="form-group">
+        {{ form.profit_loss.label(class="form-label") }}
+        {{ form.profit_loss(class="form-control") }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      {{ form.reflection.label(class="form-label") }}
+      {{ form.reflection(class="form-control", rows=4, style="height:auto;") }}
+    </div>
+
+    <div class="form-group">
+      {{ form.mistakes.label(class="form-label") }}
+      {{ form.mistakes(class="form-control", rows=2, style="height:auto;") }}
+    </div>
+
+    <div class="form-group">
+      {{ form.after_image.label(class="form-label") }}
+      {{ form.after_image(class="form-control", style="padding:0.5rem;") }}
+    </div>
+
+    <div class="flex items-center gap-2 mt-4 p-3" style="background:rgba(34,197,94,0.1); border-radius:8px;">
+      {{ form.journal_complete(style="width:20px; height:20px;") }}
+      <label for="journal_complete" class="font-bold mb-0 text-success">Mark Entry as Complete (Ready for
+        Review)</label>
+    </div>
+  </div>
+  </div>
+
+  <div class="flex" style="justify-content: flex-end; margin-top: 1rem;">
+    <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+      Save Trade Log
+    </button>
+  </div>
+</form>
+{% endblock %}

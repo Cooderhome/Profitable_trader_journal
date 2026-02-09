@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Trade Plans{% endblock %}
+{% block header %}Trade Planning{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <h2 class="text-xl font-bold">My Trade Plans</h2>
+            <p class="text-sm text-muted">Plan your trades, trade your plan</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{{ url_for('planner.performance') }}" class="btn btn-outline">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    style="margin-right: 8px;">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                Performance
+            </a>
+            <a href="{{ url_for('planner.new_trade_plan') }}" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    style="margin-right: 8px;">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Plan
+            </a>
+        </div>
+    </div>
+
+    {% if plans %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Pair</th>
+                    <th>Direction</th>
+                    <th>Entry</th>
+                    <th>SL</th>
+                    <th>TP</th>
+                    <th>Risk</th>
+                    <th>Strategy</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in plans %}
+                <tr>
+                    <td class="text-muted">{{ plan.date.strftime('%b %d, %Y') }}</td>
+                    <td class="font-bold">{{ plan.pair }}</td>
+                    <td>
+                        <span class="badge badge-{{ plan.direction.lower() if plan.direction else 'default' }}">
+                            {{ plan.direction or '-' }}
+                        </span>
+                    </td>
+                    <td>{{ plan.entry_price or '-' }}</td>
+                    <td>{{ plan.stop_loss or '-' }}</td>
+                    <td>{{ plan.take_profit or '-' }}</td>
+                    <td>${{ plan.risk_amount or '-' }}</td>
+                    <td>{{ plan.strategy or '-' }}</td>
+                    <td>
+                        {% if plan.completed %}
+                        <span class="badge badge-win">Executed</span>
+                        {% else %}
+                        <span class="badge" style="background: #fbbf24; color: white;">Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <p class="text-muted mb-4">No trade plans yet. Start planning your trades!</p>
+        <a href="{{ url_for('planner.new_trade_plan') }}" class="btn btn-primary">Create Your First Plan</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

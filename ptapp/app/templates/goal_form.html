@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}New Trading Goal{% endblock %}
+{% block header %}Create Trading Plan{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <h3 class="mb-4 text-accent border-bottom pb-2" style="border-color:var(--border-color); color:var(--accent);">
+        Define Your Target</h3>
+    <p class="text-muted mb-4">Set a financial goal and we'll track your progress based on your strategy metrics.</p>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control", placeholder="e.g. Buy a new iPhone") }}
+        </div>
+
+        <div class="grid grid-2">
+            <div class="form-group">
+                {{ form.target_amount.label(class="form-label") }}
+                {{ form.target_amount(class="form-control", placeholder="Amount needed (Profit)") }}
+            </div>
+            <div class="form-group">
+                {{ form.start_balance.label(class="form-label") }}
+                {{ form.start_balance(class="form-control", placeholder="Current Account Balance") }}
+            </div>
+        </div>
+
+        <h4 class="mt-4 mb-3 font-bold text-sm text-muted uppercase">Strategy Metrics (For Projections)</h4>
+        <div class="grid grid-3" style="@media(max-width:600px){grid-template-columns:1fr;}">
+            <div class="form-group">
+                {{ form.win_rate.label(class="form-label") }}
+                {{ form.win_rate(class="form-control", placeholder="70") }}
+            </div>
+            <div class="form-group">
+                {{ form.risk_per_trade.label(class="form-label") }}
+                {{ form.risk_per_trade(class="form-control", placeholder="10") }}
+            </div>
+            <div class="form-group">
+                {{ form.reward_per_trade.label(class="form-label") }}
+                {{ form.reward_per_trade(class="form-control", placeholder="20") }}
+            </div>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="form-group">
+                {{ form.lot_size.label(class="form-label") }}
+                {{ form.lot_size(class="form-control", placeholder="0.01") }}
+            </div>
+            <div class="form-group">
+                {{ form.start_date.label(class="form-label") }}
+                {{ form.start_date(class="form-control", type="date") }}
+            </div>
+            <div class="form-group">
+                {{ form.deadline.label(class="form-label") }}
+                {{ form.deadline(class="form-control", type="date") }}
+            </div>
+        </div>
+
+        <div class="flex" style="justify-content: flex-end; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2rem;">
+                Activate Plan
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

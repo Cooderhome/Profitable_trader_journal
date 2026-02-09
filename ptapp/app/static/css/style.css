@@ -1,0 +1,18 @@
+/* small styling additions */
+body {
+  background: #f7f9fb;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+#wrapper {
+  min-height: 100vh;
+}
+#sidebar-wrapper {
+  min-width: 220px;
+}
+.progress {
+  height: 18px;
+}
+.card .card-body em {
+  font-size: 0.95rem;
+  color: #444;
+}

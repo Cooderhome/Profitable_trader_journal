@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}Backtest Analytics{% endblock %}
+{% block header %}Backtest Analytics{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <div>
+        <h2 class="text-xl font-bold">Strategy Performance</h2>
+        <p class="text-sm text-muted">Analyze your backtesting results</p>
+    </div>
+    <a href="{{ url_for('backtest.add_backtest') }}" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            style="margin-right: 8px;">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Backtest
+    </a>
+</div>
+
+{% if total_trades == 0 %}
+<div class="card text-center py-5">
+    <p class="text-muted mb-4">No backtest entries found. Start backtesting to see analytics!</p>
+    <a href="{{ url_for('backtest.add_backtest') }}" class="btn btn-primary">Add Your First Backtest</a>
+</div>
+{% else %}
+
+<!-- Overall Stats -->
+<div class="grid grid-4 mb-4" style="gap: 1rem;">
+    <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="text-sm opacity-90">Total Trades</div>
+        <div class="text-3xl font-bold mt-2">{{ total_trades }}</div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+        <div class="text-sm opacity-90">Win Rate</div>
+        <div class="text-3xl font-bold mt-2">{{ win_rate }}%</div>
+        <div class="text-xs opacity-80 mt-1">{{ wins }}W / {{ losses }}L</div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+        <div class="text-sm opacity-90">Total P/L</div>
+        <div class="text-3xl font-bold mt-2">{{ total_pnl }}</div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;">
+        <div class="text-sm opacity-90">Profit Factor</div>
+        <div class="text-3xl font-bold mt-2">{{ profit_factor }}</div>
+    </div>
+</div>
+
+<!-- Per-Strategy Performance -->
+<div class="card">
+    <h3 class="text-lg font-bold mb-4 border-bottom pb-2" style="border-color:var(--border-color);">
+        Strategy Breakdown
+    </h3>
+
+    {% if strategies %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Strategy</th>
+                    <th>Trades</th>
+                    <th>Win Rate</th>
+                    <th>W/L</th>
+                    <th>Total P/L</th>
+                    <th>Profit Factor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for strategy_name, stats in strategies.items() %}
+                <tr>
+                    <td class="font-bold">{{ strategy_name }}</td>
+                    <td>{{ stats.total }}</td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <div class="progress"
+                                style="width: 80px; height: 8px; background: #eee; border-radius:4px; display:inline-block;">
+                                <div
+                                    style="width: {{ stats.win_rate }}%; height:100%; background: var(--success); border-radius:4px;">
+                                </div>
+                            </div>
+                            <span class="text-sm">{{ stats.win_rate|round(1) }}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-success">{{ stats.wins }}</span> /
+                        <span class="text-danger">{{ stats.losses }}</span>
+                    </td>
+                    <td class="{{ 'text-success' if stats.pnl > 0 else 'text-danger' if stats.pnl < 0 else '' }}">
+                        {{ stats.pnl|round(2) }}
+                    </td>
+                    <td>
+                        <span class="badge {{ 'badge-win' if stats.profit_factor > 1 else 'badge-loss' }}">
+                            {{ stats.profit_factor|round(2) }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted text-center py-4">No strategy data available</p>
+    {% endif %}
+</div>
+
+<!-- Tips Section -->
+<div class="card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); border: none;">
+    <h4 class="font-bold mb-2">💡 Backtesting Tips</h4>
+    <ul class="text-sm" style="line-height: 1.8;">
+        <li>✅ A profit factor above 1.5 indicates a potentially profitable strategy</li>
+        <li>✅ Win rate alone doesn't determine profitability - consider risk:reward ratio</li>
+        <li>✅ Test strategies across different market conditions</li>
+        <li>✅ Document what you learn in the notes section</li>
+    </ul>
+</div>
+
+{% endif %}
+{% endblock %}

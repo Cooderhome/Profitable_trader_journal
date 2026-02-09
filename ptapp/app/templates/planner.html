@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Growth Dashboard{% endblock %}
+{% block header %}Account Plan{% endblock %}
+
+{% block content %}
+<!-- Growth Plan Section -->
+{% if goal %}
+<div class="card mb-4"
+  style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; position: relative; overflow: hidden;">
+  <!-- Background Pattern -->
+  <div
+    style="position: absolute; top:0; right:0; width:200px; height:200px; background:radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(0,0,0,0) 70%);">
+  </div>
+
+  <div class="flex justify-between items-start mb-4 relative z-10">
+    <div>
+      <div class="text-xs font-bold uppercase tracking-wider text-blue-400 mb-1">Active Compounding Plan</div>
+      <h2 class="text-2xl font-bold">{{ goal.name }}</h2>
+      <p class="text-sm opacity-70">Deadline: {{ goal.deadline.strftime('%b %d, %Y') }}</p>
+    </div>
+    <div class="text-right">
+      <div class="text-xs opacity-70 mb-1">Current Balance</div>
+      <div class="text-3xl font-bold font-mono">${{ "{:,.2f}".format(goal.current) }}</div>
+      <div class="text-xs {{ 'text-green-400' if goal.profit >= 0 else 'text-red-400' }}">
+        {{ "+" if goal.profit >= 0 else "" }}{{ "{:,.2f}".format(goal.profit) }} (Profit)
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="relative z-10">
+    <div class="flex justify-between text-xs mb-1 opacity-80">
+      <span>Start: ${{ "{:,.0f}".format(goal.start) }}</span>
+      <span>Target: ${{ "{:,.0f}".format(goal.target) }}</span>
+    </div>
+    <div style="height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden;">
+      <div
+        style="width: {{ goal.progress }}%; height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%); transition: width 1s ease;">
+      </div>
+    </div>
+    <div class="text-xs text-center mt-2 font-bold text-blue-300">{{ goal.progress }}% of Goal Achieved</div>
+  </div>
+
+  <!-- Metrics Grid -->
+  <div class="grid grid-3 mt-4 pt-4 relative z-10" style="border-top: 1px solid rgba(255,255,255,0.1); gap: 1rem;">
+    <div>
+      <div class="text-xs opacity-60">Avg Risk (Actual)</div>
+      <div class="text-lg font-bold {{ 'text-red-400' if goal.risk_status == 'High' else 'text-green-400' }}">
+        ${{ "{:.2f}".format(goal.avg_risk) }}
+      </div>
+    </div>
+    <div>
+      <div class="text-xs opacity-60">Planned Risk</div>
+      <div class="text-lg font-bold">${{ "{:.2f}".format(goal.planned_risk) }}</div>
+    </div>
+    <div>
+      <div class="text-xs opacity-60">Trades Taken</div>
+      <div class="text-lg font-bold">{{ goal.trades_count }}</div>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="card mb-4 text-center py-5">
+  <div class="mb-3" style="font-size: 3rem;">🚀</div>
+  <h2 class="text-xl font-bold mb-2">Start Your Growth Journey</h2>
+  <p class="text-muted mb-4" style="max-width: 500px; margin: 0 auto 1.5rem;">
+    Define a clear financial target (e.g. Turn $20 into $100). We'll track your progress, risk management, and trading
+    stats automatically.
+  </p>
+  <a href="{{ url_for('planner.new_goal') }}" class="btn btn-primary" style="padding: 0.8rem 2rem;">
+    Create Growth Plan
+  </a>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="grid grid-3 mb-4" style="gap: 1rem;">
+  <a href="{{ url_for('planner.new_trade_plan') }}"
+    class="card hover-card flex flex-col items-center justify-center py-4 text-center">
+    <div class="mb-2 text-accent">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </div>
+    <h3 class="font-bold text-base">Plan Next Trade</h3>
+    <p class="text-xs text-muted">Prepare setup details</p>
+  </a>
+
+  <a href="{{ url_for('planner.trade_plans') }}"
+    class="card hover-card flex flex-col items-center justify-center py-4 text-center">
+    <div class="mb-2 text-blue-500">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+    </div>
+    <h3 class="font-bold text-base">View Setup List</h3>
+    <p class="text-xs text-muted">Manage active plans</p>
+  </a>
+
+  <a href="{{ url_for('analysis.performance_dashboard') if 'analysis' in request.full_path else url_for('planner.performance') }}"
+    class="card hover-card flex flex-col items-center justify-center py-4 text-center">
+    <div class="mb-2 text-purple-500">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+      </svg>
+    </div>
+    <h3 class="font-bold text-base">Analytics</h3>
+    <p class="text-xs text-muted">Check performance</p>
+  </a>
+</div>
+{% endblock %}

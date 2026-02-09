@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}New Backtest{% endblock %}
+{% block header %}New Backtest Entry{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">📊 Add Backtest Trade</h2>
+
+{% if form.errors %}
+<div class="alert alert-danger">
+    <ul class="mb-0">
+        {% for field, errors in form.errors.items() %}
+        {% for error in errors %}
+        <li>{{ field }}: {{ error }}</li>
+        {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <div class="card">
+        <h3 class="mb-4 text-accent border-bottom pb-2" style="border-color:var(--border-color); color:var(--accent);">
+            Strategy Details</h3>
+
+        <div class="grid grid-2">
+            <div class="form-group">
+                {{ form.strategy_name.label(class="form-label") }}
+                {{ form.strategy_name(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.pair.label(class="form-label") }}
+                {{ form.pair(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="form-group">
+                {{ form.entry_time.label(class="form-label") }}
+                {{ form.entry_time(class="form-control", type="datetime-local") }}
+            </div>
+            <div class="form-group">
+                {{ form.exit_time.label(class="form-label") }}
+                {{ form.exit_time(class="form-control", type="datetime-local") }}
+            </div>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="form-group">
+                {{ form.entry_price.label(class="form-label") }}
+                {{ form.entry_price(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.exit_price.label(class="form-label") }}
+                {{ form.exit_price(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form.result.label(class="form-label") }}
+            {{ form.result(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.notes.label(class="form-label") }}
+            {{ form.notes(class="form-control", rows=4, style="height:auto;") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.after_image.label(class="form-label") }}
+            {{ form.after_image(class="form-control", style="padding:0.5rem;") }}
+        </div>
+    </div>
+
+    <div class="flex" style="justify-content: flex-end; margin-top: 1rem; gap: 1rem;">
+        <a href="{{ url_for('backtest.list_backtests') }}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+            Save Backtest
+        </button>
+    </div>
+</form>
+{% endblock %}

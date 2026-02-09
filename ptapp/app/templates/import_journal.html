@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Import Trades{% endblock %}
+
+{% block header %}Import from Broker{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h3 style="margin-bottom: 1rem;">Upload Trade History</h3>
+    <p class="text-muted" style="margin-bottom: 2rem;">
+        Upload a CSV file from your broker (MetaTrader, cTrader, or generic CSV).
+        The system will attempt to auto-detect columns.
+    </p>
+
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            <div style="border: 2px dashed var(--border-color); padding: 3rem; text-align: center; border-radius: 1rem; cursor: pointer; transition: all 0.2s;"
+                id="drop-zone" onclick="document.getElementById('csv_file').click()">
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                    style="color: var(--accent); margin-bottom: 1rem;">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+
+                <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem;">Click to upload or drag & drop
+                </div>
+                <div class="text-muted text-sm">Supported: .csv, .xlsx</div>
+            </div>
+
+            <!-- Hide actual input -->
+            {{ form.csv_file(class="form-control", style="display:none;", onchange="updateFileName(this)") }}
+
+            <div id="file-name" class="text-center mt-4 text-success font-bold" style="display: none;"></div>
+        </div>
+
+        <div style="text-align: right; margin-top: 2rem;">
+            <a href="{{ url_for('journal.list_journals') }}" class="btn btn-outline"
+                style="margin-right: 1rem;">Cancel</a>
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+
+<script>
+    function updateFileName(input) {
+        const display = document.getElementById('file-name');
+        if (input.files && input.files[0]) {
+            display.textContent = "Selected: " + input.files[0].name;
+            display.style.display = 'block';
+            document.getElementById('drop-zone').style.borderColor = 'var(--success)';
+            document.getElementById('drop-zone').style.background = 'rgba(34, 197, 94, 0.05)';
+        }
+    }
+
+    // Drag & Drop
+    const dropZone = document.getElementById('drop-zone');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropZone.style.borderColor = 'var(--accent)';
+        dropZone.style.background = 'rgba(59, 130, 246, 0.1)';
+    }
+
+    function unhighlight(e) {
+        dropZone.style.borderColor = 'var(--border-color)';
+        dropZone.style.background = 'transparent';
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        document.getElementById('csv_file').files = files;
+        updateFileName(document.getElementById('csv_file'));
+    }
+</script>
+{% endblock %}

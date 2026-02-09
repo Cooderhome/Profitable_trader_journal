@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3>{{ plan.date.strftime('%B %d, %Y') }} - {{ plan.goal }}</h3>
+  <p><strong>Tasks:</strong></p>
+  <pre>{{ plan.tasks }}</pre>
+  {% if plan.reflection %}
+  <p><strong>Reflection:</strong></p>
+  <pre>{{ plan.reflection }}</pre>
+  {% endif %}
+  <a href="{{ url_for('planner.planner_list') }}" class="btn btn-secondary mt-3">← Back to Plans</a>
+</div>
+{% endblock %}

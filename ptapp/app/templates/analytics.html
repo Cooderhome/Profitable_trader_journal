@@ -1,0 +1,627 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block header %}
+<h2 class="page-title">Analytics Dashboard</h2>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container fade-in">
+
+    <!-- Heatmap Section -->
+    <div class="card mb-4" style="overflow: hidden;">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="card-title">Trading Activity</h3>
+            <div class="text-xs text-muted">Last 365 Days</div>
+        </div>
+
+        <div class="heatmap-wrapper">
+            <div class="heatmap-days">
+                <span>Mon</span>
+                <span>Wed</span>
+                <span>Fri</span>
+            </div>
+            <div class="heatmap-scroll">
+                <div id="calendarHeatmap" class="calendar-heatmap"></div>
+            </div>
+        </div>
+
+        <div class="heatmap-legend mt-3 flex items-center justify-end gap-2 text-xs text-muted">
+            <span>No Trades</span>
+            <div class="h-2 w-2 rounded" style="background: rgba(255,255,255,0.05)"></div>
+            <div class="h-2 w-2 rounded bg-red-500 opacity-50"></div>
+            <div class="h-2 w-2 rounded bg-red-500"></div>
+            <div class="h-2 w-2 rounded bg-green-500 opacity-50"></div>
+            <div class="h-2 w-2 rounded bg-green-500"></div>
+            <span>High Activity</span>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-2">
+        <!-- Equity Curve (Weekly) -->
+        <div class="card">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="card-title">Equity Curve (Weekly)</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="weeklyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Monthly Chart -->
+        <div class="card">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="card-title">Monthly P/L</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yearly and Win/Loss -->
+    <div class="grid grid-2 mt-4">
+        <div class="card">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="card-title">Yearly Overview</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="yearlyChart"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="card-title">Win/Loss Ratio</h3>
+            </div>
+            <div class="chart-container">
+                <canvas id="winLossChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pro Analytics (Day & Hour) -->
+    <h3 class="card-title mb-4 mt-4 flex items-center gap-2">
+        Pro Analytics
+        {% if current_user.is_pro %}
+        <span class="badge badge-win">Unlocked</span>
+        {% else %}
+        <span class="badge badge-loss">Locked</span>
+        {% endif %}
+    </h3>
+
+    <div class="pro-analytics-wrapper {% if not current_user.is_pro %}pro-element locked{% endif %}">
+        <div class="grid grid-2">
+            <div class="card">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="card-title">Profit by Day of Week</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dayOfWeekChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="card-title">Profit by Hour of Day</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="hourOfDayChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {% if not current_user.is_pro %}
+        <div class="pro-overlay">
+            <div class="lock-icon">🔒</div>
+            <h3 class="text-xl font-bold mb-2">Pro Analytics Locked</h3>
+            <p class="text-muted mb-4">Upgrade to see your peak performance times.</p>
+            <a href="{{ url_for('main.subscription') }}" class="btn btn-primary">Upgrade Now</a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    .heatmap-wrapper {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .heatmap-days {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding-top: 15px;
+        /* Visual alignment with grid */
+        height: 86px;
+        /* Approx 7 rows * (10px + 2px) */
+        font-size: 0.65rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+        line-height: 1;
+    }
+
+    .heatmap-scroll {
+        overflow-x: auto;
+        padding-bottom: 5px;
+        flex: 1;
+    }
+
+    /* Scrollbar styling for heatmap */
+    .heatmap-scroll::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .heatmap-scroll::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .heatmap-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+
+    .calendar-heatmap {
+        display: grid;
+        grid-template-rows: repeat(7, 10px);
+        /* 7 fixed rows */
+        grid-auto-flow: column;
+        /* Fill columns first */
+        gap: 3px;
+    }
+
+    .day-cell {
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        background-color: rgba(255, 255, 255, 0.05);
+        /* Default */
+        transition: all 0.2s ease;
+    }
+
+    .day-cell:hover {
+        transform: scale(1.3);
+        z-index: 10;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Colors */
+    .day-cell.win-high {
+        background-color: #22c55e;
+        opacity: 1;
+        box-shadow: 0 0 5px rgba(34, 197, 94, 0.4);
+    }
+
+    .day-cell.win-med {
+        background-color: #22c55e;
+        opacity: 0.7;
+    }
+
+    .day-cell.win-low {
+        background-color: #22c55e;
+        opacity: 0.4;
+    }
+
+    .day-cell.loss-high {
+        background-color: #ef4444;
+        opacity: 1;
+        box-shadow: 0 0 5px rgba(239, 68, 68, 0.4);
+    }
+
+    .day-cell.loss-med {
+        background-color: #ef4444;
+        opacity: 0.7;
+    }
+
+    .day-cell.loss-low {
+        background-color: #ef4444;
+        opacity: 0.4;
+    }
+
+    .day-cell.be {
+        background-color: #f59e0b;
+        opacity: 0.6;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+    }
+
+    /* Utility */
+    .h-2 {
+        height: 0.5rem;
+    }
+
+    .w-2 {
+        width: 0.5rem;
+    }
+
+    .rounded {
+        border-radius: 0.125rem;
+    }
+
+    .bg-gray-700 {
+        background-color: #374151;
+    }
+
+    .bg-red-500 {
+        background-color: #ef4444;
+    }
+
+    .bg-green-500 {
+        background-color: #22c55e;
+    }
+
+    .opacity-50 {
+        opacity: 0.5;
+    }
+
+    /* Pro Analytics Lock */
+    .pro-element {
+        position: relative;
+    }
+
+    .pro-element.locked .chart-container {
+        filter: blur(8px);
+        pointer-events: none;
+        opacity: 0.5;
+    }
+
+    .pro-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        text-align: center;
+    }
+
+    .lock-icon {
+        font-size: 2rem;
+        color: var(--accent);
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Data Safety ---
+        try {
+            const weeklyLabels = {{ chart_weekly_labels | tojson
+        }};
+    const weeklyValues = {{ chart_weekly_values | tojson }};
+
+    const monthlyLabels = {{ chart_monthly_labels | tojson }};
+    const monthlyValues = {{ chart_monthly_values | tojson }};
+    const monthlyWins = {{ chart_monthly_wins | tojson }};
+    const monthlyLosses = {{ chart_monthly_losses | tojson }};
+
+    const yearlyLabels = {{ chart_yearly_labels | tojson }};
+    const yearlyValues = {{ chart_yearly_values | tojson }};
+
+    const heatmapData = {{ heatmap_data | tojson }};
+
+    // --- Chart Global Config ---
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                titleColor: '#f8fafc',
+                bodyColor: '#e2e8f0',
+                padding: 12,
+                cornerRadius: 8,
+                displayColors: false,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.1)',
+                callbacks: {
+                    label: function (context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                        }
+                        return label;
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(255,255,255,0.05)' },
+                ticks: {
+                    color: '#64748b',
+                    font: { size: 11 },
+                    callback: function (value) {
+                        return '$' + value; // Simple currency format
+                    }
+                }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { color: '#64748b', font: { size: 11 } }
+            }
+        },
+        animation: {
+            duration: 1000,
+            easing: 'easeOutQuart'
+        }
+    };
+
+    // --- 1. Weekly Chart (Equity Curve) ---
+    const ctxWeekly = document.getElementById('weeklyChart');
+    if (ctxWeekly) {
+        // Calculate cumulative equity for the curve
+        let cumulative = 0;
+        const equityData = weeklyValues.map(v => {
+            cumulative += v;
+            return cumulative;
+        });
+
+        new Chart(ctxWeekly, {
+            type: 'line',
+            data: {
+                labels: weeklyLabels.length ? weeklyLabels : ['Start'],
+                datasets: [{
+                    label: 'Equity Curve',
+                    data: weeklyValues.length ? equityData : [0],
+                    borderColor: '#3b82f6', // Bright Blue
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4, // Smooth curve
+                    fill: true,
+                    pointBackgroundColor: '#3b82f6',
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: commonOptions
+        });
+    }
+
+    // --- 2. Monthly Chart ---
+    const ctxMonthly = document.getElementById('monthlyChart');
+    if (ctxMonthly) {
+        new Chart(ctxMonthly, {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels.length ? monthlyLabels : ['No Data'],
+                datasets: [{
+                    label: 'Net P/L',
+                    data: monthlyValues.length ? monthlyValues : [0],
+                    backgroundColor: monthlyValues.map(v => v >= 0 ? '#3b82f6' : '#f59e0b'),
+                    borderRadius: 4,
+                    barThickness: 32,
+                    maxBarThickness: 50
+                }]
+            },
+            options: commonOptions
+        });
+    }
+
+    // --- 3. Yearly Chart ---
+    const ctxYearly = document.getElementById('yearlyChart');
+    if (ctxYearly) {
+        new Chart(ctxYearly, {
+            type: 'bar', // Visual preference maybe Line?
+            data: {
+                labels: yearlyLabels.length ? yearlyLabels : ['No Data'],
+                datasets: [{
+                    label: 'Net P/L',
+                    data: yearlyValues.length ? yearlyValues : [0],
+                    backgroundColor: '#8b5cf6',
+                    borderRadius: 6,
+                    barThickness: 60
+                }]
+            },
+            options: commonOptions
+        });
+    }
+
+    // --- 4. Win/Loss Chart ---
+    const ctxWL = document.getElementById('winLossChart');
+    if (ctxWL) {
+        new Chart(ctxWL, {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels.length ? monthlyLabels : ['No Data'],
+                datasets: [
+                    { label: 'Wins', data: monthlyWins.length ? monthlyWins : [0], backgroundColor: '#22c55e', borderRadius: 4, barPercentage: 0.7 },
+                    { label: 'Losses', data: monthlyLosses.length ? monthlyLosses : [0], backgroundColor: '#ef4444', borderRadius: 4, barPercentage: 0.7 }
+                ]
+            },
+            options: {
+                ...commonOptions,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    ...commonOptions.plugins,
+                    legend: {
+                        display: true,
+                        labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 8 }
+                    },
+                    tooltip: {
+                        ...commonOptions.plugins.tooltip,
+                        callbacks: {
+                            label: function (context) {
+                                return context.dataset.label + ': ' + context.parsed.y;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { stacked: false, grid: { display: false } }, // Grouped bars better than stacked usually? Or stacked. User said "loss or win". Stacked is good.
+                    y: {
+                        stacked: false,
+                        beginAtZero: true,
+                        ticks: { callback: function (value) { return value; } } // Remove $ sign
+                    }
+                }
+            }
+        });
+    }
+
+    // --- PRO ANALYTICS (Day & Hour) ---
+    const ctxDOW = document.getElementById('dayOfWeekChart');
+    if (ctxDOW) {
+        // Safe default if vars undefined
+        const dowLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+        const dowValues = {{ chart_dow_values | default ([]) | tojson
+    }};
+
+    new Chart(ctxDOW, {
+        type: 'bar',
+        data: {
+            labels: dowLabels,
+            datasets: [{
+                label: 'Avg P/L by Day',
+                data: dowValues.length ? dowValues : [0, 0, 0, 0, 0],
+                backgroundColor: (ctx) => {
+                    const v = ctx.raw;
+                    return v >= 0 ? '#22c55e' : '#ef4444';
+                },
+                borderRadius: 4
+            }]
+        },
+        options: commonOptions
+    });
+    }
+
+    const ctxHour = document.getElementById('hourOfDayChart');
+    if (ctxHour) {
+        // Safe default if vars undefined
+        const hourLabels = Array.from({ length: 24 }, (_, i) => i + ':00');
+        const hourValues = {{ chart_hour_values | default ([]) | tojson
+    }};
+
+    new Chart(ctxHour, {
+        type: 'line',
+        data: {
+            labels: hourLabels,
+            datasets: [{
+                label: 'P/L by Hour',
+                data: hourValues.length ? hourValues : new Array(24).fill(0),
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: commonOptions
+    });
+    }
+
+    // --- Heatmap Logic ---
+    function generateHeatmap() {
+        const container = document.getElementById('calendarHeatmap');
+        if (!container) return;
+
+        // We want 52 weeks back.
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - 364);
+
+        // Get Day of Week of Start Date (0=Sun, 1=Mon...)
+        // Grid fills Column 1 (Rows 1-7).
+        // If StartDate is Tuesday (2), we want it in Row 3 (index 2).
+        // So we need 2 empty cells (0,1).
+        const dayOfWeek = startDate.getDay();
+
+        // Padding empty cells
+        for (let i = 0; i < dayOfWeek; i++) {
+            const pad = document.createElement('div');
+            pad.style.visibility = 'hidden';
+            pad.className = 'day-cell';
+            container.appendChild(pad);
+        }
+
+        // Render Days
+        for (let i = 0; i <= 365; i++) {
+            const d = new Date(startDate);
+            d.setDate(d.getDate() + i);
+            const dateStr = d.toISOString().split('T')[0];
+
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+
+            // Tooltip logic
+            let cellTitle = new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+            if (heatmapData[dateStr] !== undefined) {
+                const val = heatmapData[dateStr];
+                cellTitle += `: $${val.toFixed(2)}`;
+
+                // Color Logic
+                if (val > 0) {
+                    if (val > 500) cell.classList.add('win-high');
+                    else if (val > 100) cell.classList.add('win-med');
+                    else cell.classList.add('win-low');
+                } else if (val < 0) {
+                    if (val < -500) cell.classList.add('loss-high');
+                    else if (val < -100) cell.classList.add('loss-med');
+                    else cell.classList.add('loss-low');
+                } else {
+                    cell.classList.add('be');
+                }
+            } else {
+                cellTitle += ": No Trades";
+            }
+
+            cell.title = cellTitle;
+            container.appendChild(cell);
+        }
+    }
+    generateHeatmap();
+
+        } catch (e) {
+        console.error("Analytics Error:", e);
+    }
+    });
+</script>
+{% endblock %}

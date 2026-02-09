@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}New Trade Plan{% endblock %}
+{% block header %}Plan Your Trade{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">📋 Create Trade Plan</h2>
+
+{% if form.errors %}
+<div class="alert alert-danger">
+    <ul class="mb-0">
+        {% for field, errors in form.errors.items() %}
+        {% for error in errors %}
+        <li>{{ field }}: {{ error }}</li>
+        {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="card">
+        <h3 class="mb-4 text-accent border-bottom pb-2" style="border-color:var(--border-color); color:var(--accent);">
+            Trade Setup</h3>
+
+        <div class="grid grid-2">
+            <div class="form-group">
+                {{ form.pair.label(class="form-label") }}
+                {{ form.pair(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.direction.label(class="form-label") }}
+                {{ form.direction(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="grid grid-3">
+            <div class="form-group">
+                {{ form.entry_price.label(class="form-label") }}
+                {{ form.entry_price(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.stop_loss.label(class="form-label") }}
+                {{ form.stop_loss(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.take_profit.label(class="form-label") }}
+                {{ form.take_profit(class="form-control") }}
+            </div>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="form-group">
+                {{ form.risk_amount.label(class="form-label") }}
+                {{ form.risk_amount(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.strategy.label(class="form-label") }}
+                {{ form.strategy(class="form-control") }}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 class="mb-4 border-bottom pb-2" style="border-color:var(--border-color); color:var(--success);">
+            Plan & Analysis</h3>
+
+        <div class="form-group">
+            {{ form.goal.label(class="form-label") }}
+            {{ form.goal(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.analysis.label(class="form-label") }}
+            {{ form.analysis(class="form-control", rows=6, style="height:auto;") }}
+            <small class="text-muted">Describe your edge, why you're taking this trade, and what conditions must be
+                met</small>
+        </div>
+    </div>
+
+    <div class="flex" style="justify-content: flex-end; margin-top: 1rem; gap: 1rem;">
+        <a href="{{ url_for('planner.trade_plans') }}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">
+            Save Trade Plan
+        </button>
+    </div>
+</form>
+
+<div class="card mt-4" style="background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); border: none;">
+    <h4 class="font-bold mb-2">💡 Why Plan Your Trades?</h4>
+    <ul class="text-sm" style="line-height: 1.8;">
+        <li>✅ Removes emotion from trading decisions</li>
+        <li>✅ Helps you stick to your strategy</li>
+        <li>✅ Allows you to track discipline and plan adherence</li>
+        <li>✅ Improves consistency and long-term profitability</li>
+    </ul>
+</div>
+{% endblock %}

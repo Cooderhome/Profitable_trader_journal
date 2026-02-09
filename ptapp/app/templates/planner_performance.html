@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}Plan Performance{% endblock %}
+{% block header %}Trading Discipline Analytics{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <div>
+        <h2 class="text-xl font-bold">Plan vs Execution</h2>
+        <p class="text-sm text-muted">How well are you following your trading plan?</p>
+    </div>
+    <a href="{{ url_for('planner.new_trade_plan') }}" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            style="margin-right: 8px;">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Plan
+    </a>
+</div>
+
+<!-- Performance Metrics -->
+<div class="grid grid-3 mb-4" style="gap: 1rem;">
+    <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="text-sm opacity-90">Total Plans</div>
+        <div class="text-3xl font-bold mt-2">{{ total_plans }}</div>
+        <div class="text-xs opacity-80 mt-1">{{ executed_plans }} executed</div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+        <div class="text-sm opacity-90">Execution Rate</div>
+        <div class="text-3xl font-bold mt-2">{{ execution_rate }}%</div>
+        <div class="text-xs opacity-80 mt-1">Plans followed through</div>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
+        <div class="text-sm opacity-90">Plan Adherence</div>
+        <div class="text-3xl font-bold mt-2">{{ avg_adherence }}%</div>
+        <div class="text-xs opacity-80 mt-1">Accuracy to plan</div>
+    </div>
+</div>
+
+<!-- AI Guidance -->
+<div class="card mb-4"
+    style="background: linear-gradient(135deg, {{ '#dcfce7' if guidance.color == 'success' else '#fee2e2' if guidance.color == 'danger' else '#fef3c7' if guidance.color == 'warning' else '#dbeafe' }} 0%, {{ '#bbf7d0' if guidance.color == 'success' else '#fecaca' if guidance.color == 'danger' else '#fde68a' if guidance.color == 'warning' else '#bfdbfe' }} 100%); border: none;">
+    <div class="flex items-center gap-3 mb-3">
+        <div style="font-size: 2rem;">🤖</div>
+        <div>
+            <h3 class="font-bold text-lg">AI Performance Assessment</h3>
+            <p class="text-sm">Rating: <strong>{{ guidance.rating }}</strong></p>
+        </div>
+    </div>
+
+    <div class="space-y-2">
+        {% for message in guidance.messages %}
+        <p class="text-sm" style="line-height: 1.6;">{{ message }}</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Detailed Comparisons -->
+{% if comparisons %}
+<div class="card">
+    <h3 class="text-lg font-bold mb-4 border-bottom pb-2" style="border-color:var(--border-color);">
+        Plan vs Actual Comparison
+    </h3>
+
+    <div class="space-y-4">
+        {% for comp in comparisons %}
+        <div class="card" style="background: #f9fafb; border: 1px solid #e5e7eb;">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <h4 class="font-bold">{{ comp.plan.pair }} - {{ comp.plan.direction|upper }}</h4>
+                    <p class="text-sm text-muted">{{ comp.plan.date.strftime('%b %d, %Y') }}</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-bold"
+                        style="color: {{ 'var(--success)' if comp.adherence_score >= 75 else 'var(--danger)' if comp.adherence_score < 50 else 'var(--warning)' }};">
+                        {{ comp.adherence_score|round|int }}%
+                    </div>
+                    <div class="text-xs text-muted">Adherence</div>
+                </div>
+            </div>
+
+            <div class="grid grid-2" style="gap: 1rem;">
+                <!-- Planned -->
+                <div>
+                    <h5 class="text-sm font-bold mb-2" style="color: var(--accent);">📋 Planned</h5>
+                    <div class="text-sm space-y-1">
+                        <div><strong>Entry:</strong> {{ comp.plan.entry_price }}</div>
+                        <div><strong>SL:</strong> {{ comp.plan.stop_loss }}</div>
+                        <div><strong>TP:</strong> {{ comp.plan.take_profit }}</div>
+                        <div><strong>Risk:</strong> ${{ comp.plan.risk_amount }}</div>
+                        <div><strong>Strategy:</strong> {{ comp.plan.strategy }}</div>
+                    </div>
+                </div>
+
+                <!-- Actual -->
+                <div>
+                    <h5 class="text-sm font-bold mb-2" style="color: var(--success);">✅ Actual</h5>
+                    <div class="text-sm space-y-1">
+                        <div><strong>Entry:</strong> {{ comp.actual.entry_price or '-' }}</div>
+                        <div><strong>SL:</strong> {{ comp.actual.stop_loss or '-' }}</div>
+                        <div><strong>TP:</strong> {{ comp.actual.take_profit or '-' }}</div>
+                        <div><strong>Risk:</strong> ${{ comp.actual.risk_amount or '-' }}</div>
+                        <div><strong>Strategy:</strong> {{ comp.actual.strategy or '-' }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adherence Indicators -->
+            <div class="mt-3 pt-3" style="border-top: 1px solid #e5e7eb;">
+                <div class="flex gap-2 flex-wrap">
+                    <span class="badge {{ 'badge-win' if comp.pair_match else 'badge-loss' }}">
+                        {{ '✓' if comp.pair_match else '✗' }} Pair
+                    </span>
+                    <span class="badge {{ 'badge-win' if comp.direction_match else 'badge-loss' }}">
+                        {{ '✓' if comp.direction_match else '✗' }} Direction
+                    </span>
+                    <span class="badge {{ 'badge-win' if comp.risk_adhered else 'badge-loss' }}">
+                        {{ '✓' if comp.risk_adhered else '✗' }} Risk
+                    </span>
+                    <span class="badge {{ 'badge-win' if comp.strategy_match else 'badge-loss' }}">
+                        {{ '✓' if comp.strategy_match else '✗' }} Strategy
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="card text-center py-5">
+    <p class="text-muted mb-4">No executed plans to compare yet. Link your journal entries to your plans to see
+        performance analytics.</p>
+</div>
+{% endif %}
+
+<!-- Tips -->
+<div class="card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); border: none;">
+    <h4 class="font-bold mb-2">💡 Improving Discipline</h4>
+    <ul class="text-sm" style="line-height: 1.8;">
+        <li>✅ Plan every trade before entering - no exceptions</li>
+        <li>✅ If the setup doesn't match your plan, don't trade</li>
+        <li>✅ Review your plan adherence weekly to identify patterns</li>
+        <li>✅ High adherence + losing = strategy problem. Low adherence = discipline problem</li>
+    </ul>
+</div>
+{% endblock %}

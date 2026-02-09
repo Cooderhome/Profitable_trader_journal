@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <a href="{{ url_for('journal.list_journals') }}" class="btn btn-outline-secondary mb-3">&larr; Back to Journals</a>
+
+    <div class="card shadow-lg p-4">
+        <h4 class="mb-3">Trade Details — {{ entry.pair }} ({{ entry.date.strftime('%Y-%m-%d') }})</h4>
+
+        <div class="row">
+            <!-- Before Trade -->
+            <div class="col-md-6">
+                <h5 class="text-primary">Before Trade</h5>
+                <p><strong>Entry:</strong> {{ entry.entry_price }}</p>
+                <p><strong>Stop Loss:</strong> {{ entry.stop_loss }}</p>
+                <p><strong>Take Profit:</strong> {{ entry.take_profit }}</p>
+                <p><strong>Risk:Reward:</strong> {{ entry.risk_reward }}</p>
+                <p><strong>Strategy:</strong> {{ entry.strategy }}</p>
+                <p><strong>News Event:</strong> {{ entry.news_event }}</p>
+                <p><strong>Analysis:</strong> {{ entry.pre_trade_analysis }}</p>
+                <p><strong>Result:</strong>
+                    {% if entry.result and entry.result.lower() == 'win' %}
+                    <span class="text-success fw-bold">Win</span>
+                    {% elif entry.result and entry.result.lower() == 'loss' %}
+                    <span class="text-danger fw-bold">Loss</span>
+                    {% else %}
+                    <span class="text-muted">{{ entry.result or 'Pending/Open' }}</span>
+                    {% endif %}
+                </p>
+                {% if entry.before_image %}
+                <img src="{{ url_for('static', filename='uploads/' ~ entry.before_image) }}"
+                    class="img-fluid rounded shadow-sm mb-3">
+                {% endif %}
+            </div>
+
+            <!-- After Trade -->
+            <div class="col-md-6">
+                <h5 class="text-success">After Trade</h5>
+                <p><strong>Reflection / Notes:</strong></p>
+                <div class="p-3 bg-light rounded border">
+                    {{ entry.reflection or "No reflection added." }}
+                </div>
+                <p>Execution Mistakes / Notes:</strong></p>
+                <div class="p-3 bg-light rounded border">
+                    {{ entry.mistakes or "Executed well market played." }}
+                </div>
+                {% if entry.after_image %}
+                <img src="{{ url_for('static', filename='uploads/' ~ entry.after_image) }}"
+                    class="img-fluid rounded shadow-sm mb-3">
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

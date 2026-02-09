@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h3 class="fw-bold mb-3">📊 Planner Dashboard</h3>
+
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5>Weekly Completion Rate</h5>
+        <div class="progress mb-2" style="height: 25px;">
+          <div class="progress-bar bg-success" role="progressbar" style="width: {{ completion_rate }}%;" aria-valuenow="{{ completion_rate }}" aria-valuemin="0" aria-valuemax="100">
+            {{ completion_rate }}%
+          </div>
+        </div>
+        <p class="text-muted small">Tasks completed this week: {{ completion_rate }}%</p>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card shadow-sm p-3">
+        <h5>Daily Completion Stats</h5>
+        <canvas id="dailyChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm p-3 mt-3">
+    <h5 class="mb-3">Weekly Planner Details</h5>
+    {% if weekly_plans %}
+      <table class="table table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>Date</th>
+            <th>Goal</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for plan in weekly_plans %}
+          <tr>
+            <td>{{ plan.date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ plan.goal }}</td>
+            <td>
+              {% if plan.completed %}
+                <span class="badge bg-success">Completed</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% endif %}
+            </td>
+            <td><a href="{{ url_for('planner.planner_detail', id=plan.id) }}" class="btn btn-sm btn-info">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No plans found for this week.</p>
+    {% endif %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('dailyChart').getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ daily_stats.keys()|list }},
+      datasets: [{
+        label: 'Completion %',
+        data: {{ daily_stats.values()|list }},
+        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { stepSize: 10 } }
+      }
+    }
+  });
+</script>
+
+{% endblock %}

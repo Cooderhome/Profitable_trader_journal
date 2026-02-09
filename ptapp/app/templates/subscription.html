@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Upgrade to Pro{% endblock %}
+
+{% block header %}Upgrade to Pro{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto; text-align: center;">
+    <h2 class="text-2xl font-bold mb-4">Unlock Your Full Trading Potential</h2>
+    <p class="text-muted mb-8">Get access to professional analytics, unlimited data, and broker imports.</p>
+
+    <div class="grid grid-2 gap-2" style="align-items: center;">
+
+        <!-- Free Plan -->
+        <div class="card" style="opacity: 0.7;">
+            <h3 class="text-lg">Starter</h3>
+            <div style="font-size: 2rem; font-weight: 800; margin: 1rem 0;">Free</div>
+            <ul style="text-align: left; margin-bottom: 2rem; list-style: none;">
+                <li class="mb-2">✓ 50 Journal Entries</li>
+                <li class="mb-2">✓ Basic Analytics</li>
+                <li class="mb-2">✓ 1 Active Goal</li>
+                <li class="text-muted mb-2">✗ CSV Import</li>
+                <li class="text-muted mb-2">✗ Advanced Analytics</li>
+            </ul>
+            <button class="btn btn-outline" disabled style="width: 100%;">Current Plan</button>
+        </div>
+
+        <!-- Pro Plan -->
+        <div class="card" style="border: 2px solid var(--accent); position: relative; transform: scale(1.05);">
+            <div
+                style="background: var(--accent); color: white; position: absolute; top: 0; left: 50%; transform: translateX(-50%) translateY(-50%); padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">
+                RECOMMENDED</div>
+            <h3 class="text-lg font-bold" style="color: var(--accent);">Professional</h3>
+            <div style="font-size: 2.5rem; font-weight: 800; margin: 1rem 0;">$29<span
+                    style="font-size: 1rem; color: var(--text-secondary); font-weight: normal;">/mo</span></div>
+            <ul style="text-align: left; margin-bottom: 2rem; list-style: none;">
+                <li class="mb-2 text-success font-bold">✓ Unlimited Entries</li>
+                <li class="mb-2 text-success font-bold">✓ CSV Broker Import</li>
+                <li class="mb-2 text-success font-bold">✓ Pro Analytics Suite</li>
+                <li class="mb-2">✓ Priority Support</li>
+                <li class="mb-2">✓ Community Access</li>
+            </ul>
+
+            <form action="{{ url_for('main.upgrade_pro') }}" method="POST">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+                    Start Pro Subscription
+                </button>
+            </form>
+            <p class="text-xs text-muted mt-2">Secure payment via Stripe (Mock Mode)</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

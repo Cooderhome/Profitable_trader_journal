@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ProTrader | {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="feather feather-trending-up">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                    <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+                <span class="logo-text">Pro<span>Trader</span></span>
+            </div>
+
+            <nav class="nav-links">
+                <a href="{{ url_for('main.index') }}" title="Dashboard"
+                    class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span class="link-text">Dashboard</span>
+                </a>
+
+                <a href="{{ url_for('journal.new_journal_entry') }}" title="New Entry"
+                    class="nav-link {% if request.endpoint == 'journal.new_journal_entry' %}active{% endif %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <span class="link-text">New Entry</span>
+                </a>
+
+                <a href="{{ url_for('journal.list_journals') }}" title="Journal Logs"
+                    class="nav-link {% if request.endpoint == 'journal.list_journals' %}active{% endif %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span class="link-text">Journal Logs</span>
+                </a>
+
+                <a href="{{ url_for('backtest.list_backtests') }}" title="Backtesting"
+                    class="nav-link {% if 'backtest' in request.endpoint %}active{% endif %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    <span class="link-text">Backtesting</span>
+                </a>
+
+                <a href="{{ url_for('planner.planner_home') }}" title="Planner"
+                    class="nav-link {% if 'planner' in request.endpoint %}active{% endif %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span class="link-text">Planner</span>
+                </a>
+
+                <a href="{{ url_for('analytics.dashboard') }}" title="Analytics"
+                    class="nav-link {% if 'analytics' in request.endpoint %}active{% endif %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    <span class="link-text">Analytics</span>
+                </a>
+            </nav>
+
+            <button id="desktopSidebarToggle" class="btn btn-outline sidebar-toggle-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="11 17 6 12 11 7"></polyline>
+                    <polyline points="18 17 13 12 18 7"></polyline>
+                </svg>
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <button class="btn btn-outline" id="sidebarToggle"
+                    style="display: none; @media(max-width:768px){display:block;}">Menu</button>
+                <div class="page-title">
+                    {% block header %}{% endblock %}
+                </div>
+                <!-- User Menu -->
+                <!-- User Dropdown -->
+                <div class="user-profile dropdown-container" style="position: relative;">
+                    {% if current_user.is_authenticated %}
+                    <button id="profileDropdownBtn" class="flex items-center"
+                        style="background: none; border: none; cursor: pointer; text-align: right;">
+                        <div style="margin-right: 1rem; @media(max-width:600px){display:none;}">
+                            <div class="text-sm font-bold" style="color: var(--text-color);">{{ current_user.username }}
+                            </div>
+                            <div class="text-xs text-muted">
+                                {% if current_user.is_pro %}
+                                <span style="color: var(--success);">★ Pro Member</span>
+                                {% else %}
+                                Free Account
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Avatar -->
+                        <div
+                            style="width:40px; height:40px; background:var(--accent); border-radius:50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                            {{ current_user.username[0].upper() }}
+                        </div>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div id="profileDropdown" class="glass-panel" style="
+                            position: absolute; 
+                            top: 100%; 
+                            right: 0; 
+                            width: 200px; 
+                            margin-top: 0.5rem; 
+                            padding: 0.5rem; 
+                            display: none; 
+                            flex-direction: column; 
+                            z-index: 1000;
+                            border: 1px solid var(--border-color);
+                            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                        ">
+                        <div class="text-xs text-muted uppercase px-3 py-2"
+                            style="border-bottom: 1px solid var(--border-color); margin-bottom: 0.5rem;">Account</div>
+
+                        <a href="#" class="dropdown-item"
+                            style="display:block; padding: 0.75rem 1rem; color: var(--text-color); border-radius: 4px; text-decoration: none; transition: background 0.2s;">
+                            ⚙️ User Settings
+                        </a>
+                        {% if not current_user.is_pro %}
+                        <a href="{{ url_for('main.subscription') }}" class="dropdown-item"
+                            style="display:block; padding: 0.75rem 1rem; color: var(--accent); font-weight: bold; border-radius: 4px; text-decoration: none; transition: background 0.2s;">
+                            🚀 Upgrade to Pro
+                        </a>
+                        {% else %}
+                        <a href="#" class="dropdown-item"
+                            style="display:block; padding: 0.75rem 1rem; color: var(--text-color); border-radius: 4px; text-decoration: none; transition: background 0.2s;">
+                            💳 Manage Subscription
+                        </a>
+                        {% endif %}
+
+                        <div style="height: 1px; background: var(--border-color); margin: 0.5rem 0;"></div>
+
+                        <a href="{{ url_for('auth.logout') }}" class="dropdown-item"
+                            style="display:block; padding: 0.75rem 1rem; color: var(--danger); border-radius: 4px; text-decoration: none; transition: background 0.2s;">
+                            ➡️ Logout
+                        </a>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">Login</a>
+                    {% endif %}
+                </div>
+
+                <style>
+                    .dropdown-item:hover {
+                        background: rgba(255, 255, 255, 0.08);
+                    }
+
+                    .glass-panel {
+                        background: rgba(30, 30, 35, 0.95);
+                        backdrop-filter: blur(12px);
+                        border-radius: 8px;
+                    }
+                </style>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        // Profile Dropdown
+                        const pBtn = document.getElementById('profileDropdownBtn');
+                        const pMenu = document.getElementById('profileDropdown');
+                        if (pBtn && pMenu) {
+                            pBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                pMenu.style.display = pMenu.style.display === 'flex' ? 'none' : 'flex';
+                            });
+                            document.addEventListener('click', () => {
+                                pMenu.style.display = 'none';
+                            });
+                            pMenu.addEventListener('click', (e) => e.stopPropagation());
+                        }
+
+                        // Mobile Sidebar Toggle
+                        const toggle = document.getElementById('sidebarToggle');
+                        const sidebar = document.getElementById('sidebar');
+                        if (toggle) {
+                            toggle.addEventListener('click', () => {
+                                sidebar.classList.toggle('active');
+                            });
+                        }
+
+                        // Desktop Sidebar Collapse
+                        const desktopToggle = document.getElementById('desktopSidebarToggle');
+                        if (desktopToggle) {
+                            // Toggle Button Click
+                            desktopToggle.addEventListener('click', () => {
+                                const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+
+                                if (isCollapsed) {
+                                    sidebar.classList.add('collapsed');
+                                } else {
+                                    sidebar.classList.remove('collapsed');
+                                }
+
+                                // Save preference
+                                localStorage.setItem('sidebar-collapsed', isCollapsed);
+                            });
+
+                            // Load preference
+                            const storedState = localStorage.getItem('sidebar-collapsed');
+                            if (storedState === 'true') {
+                                sidebar.classList.add('collapsed');
+                                document.body.classList.add('sidebar-collapsed');
+                            }
+
+                            // Auto-expand on hover if collapsed
+                            sidebar.addEventListener('mouseenter', () => {
+                                if (document.body.classList.contains('sidebar-collapsed')) {
+                                    sidebar.classList.remove('collapsed');
+                                }
+                            });
+
+                            sidebar.addEventListener('mouseleave', () => {
+                                if (document.body.classList.contains('sidebar-collapsed')) {
+                                    sidebar.classList.add('collapsed');
+                                }
+                            });
+                        }
+                    });
+                </script>
+            </header>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                <div class="card"
+                    style="border-left: 4px solid var(--{{ 'success' if category=='success' else 'danger' }}); padding: 1rem;">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+
+</html>

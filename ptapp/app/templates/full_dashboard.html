@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h3 class="fw-bold mb-3">📈 Profitable Trader Dashboard</h3>
+
+  <div class="row g-3 mb-4">
+    <!-- Journaling KPI -->
+    <div class="col-md-4">
+      <div class="card p-3 shadow-sm">
+        <h6>Journaling</h6>
+        <div class="progress mb-2" style="height: 20px;">
+          <div class="progress-bar bg-primary" role="progressbar" style="width: {{ journaling_percent }}%;">
+            {{ journaling_percent }}%
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Backtest KPI -->
+    <div class="col-md-4">
+      <div class="card p-3 shadow-sm">
+        <h6>Backtest</h6>
+        <div class="progress mb-2" style="height: 20px;">
+          <div class="progress-bar bg-warning" role="progressbar" style="width: {{ backtest_percent }}%;">
+            {{ backtest_percent }}%
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Planner KPI -->
+    <div class="col-md-4">
+      <div class="card p-3 shadow-sm">
+        <h6>Planner</h6>
+        <div class="progress mb-2" style="height: 20px;">
+          <div class="progress-bar bg-success" role="progressbar" style="width: {{ planner_percent }}%;">
+            {{ planner_percent }}%
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Aggregate PT Progress -->
+  <div class="card p-3 mb-4 shadow-sm">
+    <h6>Overall PT Progress (30%)</h6>
+    <div class="progress mb-2" style="height: 25px;">
+      <div class="progress-bar bg-danger" role="progressbar" style="width: {{ pt_progress }}%;">
+        {{ pt_progress }}%
+      </div>
+    </div>
+    <p class="text-muted small">Weighted sum of Journaling, Backtest, Planner.</p>
+  </div>
+
+  <!-- Daily Stats Chart -->
+  <div class="card p-3 shadow-sm">
+    <h6>Daily Performance This Week</h6>
+    <canvas id="dailyChart" height="120"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const ctx = document.getElementById('dailyChart').getContext('2d');
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ daily_stats.keys()|list }},
+      datasets: [{
+        label: 'Daily PT %',
+        data: {{ daily_stats.values()|list }},
+        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { stepSize: 10 } }
+      }
+    }
+  });
+</script>
+{% endblock %}

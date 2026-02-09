@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Daily Plans{% endblock %}
+{% block header %}Daily Planner{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="flex justify-between items-center mb-4">
+    <div>
+      <h2 class="text-xl font-bold">Your Plans</h2>
+      <p class="text-sm text-muted">Track your daily goals and tasks</p>
+    </div>
+    <a href="{{ url_for('planner.planner_home') }}" class="btn btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      New Plan
+    </a>
+  </div>
+
+  {% if plans %}
+  <div class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Goal</th>
+          <th>Status</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for plan in plans %}
+        <tr>
+          <td class="text-muted">{{ plan.date.strftime('%b %d') }}</td>
+          <td class="font-bold text-accent">{{ plan.goal }}</td>
+          <td>
+            {% if plan.completed %}
+            <span class="badge" style="background:rgba(34,197,94,0.1); color:var(--success);">Completed</span>
+            {% else %}
+            <span class="badge" style="background:rgba(245,158,11,0.1); color:var(--warning);">Pending</span>
+            {% endif %}
+          </td>
+          <td class="text-right">
+            <a href="{{ url_for('planner.planner_detail', id=plan.id) }}" class="btn btn-outline text-sm">View</a>
+            <a href="{{ url_for('planner.planner_home') }}?edit={{ plan.id }}" class="btn btn-outline text-sm">Edit</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <p class="text-muted mb-4">No plans created yet.</p>
+    <a href="{{ url_for('planner.planner_home') }}" class="btn btn-primary">Create Today's Plan</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

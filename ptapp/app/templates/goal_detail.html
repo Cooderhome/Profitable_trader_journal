@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}{{ goal.name }} - Details{% endblock %}
+{% block header %}Plan Details{% endblock %}
+
+{% block content %}
+<div class="grid grid-2" style="margin-bottom: 2rem;">
+    <!-- Main Status Card -->
+    <div class="card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-accent font-bold">{{ goal.name }}</h3>
+            <span class="badge" style="background:var(--accent); color:white;">{{ goal.status.upper() }}</span>
+        </div>
+
+        <div class="flex justify-between items-end mb-2">
+            <div>
+                <div class="text-muted text-sm">Current Profit</div>
+                <div class="text-2xl font-bold {{ 'text-success' if current_profit >= 0 else 'text-danger' }}">${{
+                    current_profit }}</div>
+            </div>
+            <div class="text-right">
+                <div class="text-muted text-sm">Target Profit</div>
+                <div class="text-2xl font-bold">${{ goal.target_amount }}</div>
+            </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.1); height: 12px; border-radius: 6px; margin-bottom: 1rem;">
+            <div
+                style="width: {{ progress }}%; background: {{ 'var(--danger)' if warning else 'var(--accent)' }}; height: 100%; border-radius: 6px; min-width: 5%;">
+            </div>
+        </div>
+
+        {% if warning %}
+        <div class="alert alert-danger"
+            style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 1rem; border-radius: 0.5rem; color: var(--danger);">
+            <strong>⚠️ Risk Warning</strong>
+            <p class="mb-0 text-sm">{{ warning }}</p>
+        </div>
+        {% endif %}
+
+        {% if progress >= 100 %}
+        <div class="mt-4 p-4 text-center"
+            style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); border-radius: 0.5rem;">
+            <div class="text-4xl mb-2">🎉</div>
+            <h3 class="text-success font-bold text-lg">Target Achieved!</h3>
+            <p class="text-sm text-muted mb-4">You have successfully reached your financial goal. Great discipline!</p>
+
+            <form action="{{ url_for('planner.complete_goal', id=goal.id) }}" method="POST">
+                <button type="submit" class="btn btn-primary"
+                    onclick="return confirm('Are you sure you want to finish this plan? It will be archived.')">
+                    Complete & Archive Plan
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Strategy Metrics Card -->
+    <div class="card">
+        <h4 class="text-sm text-muted font-bold uppercase mb-4">Plan Rating</h4>
+        <div class="mb-4">
+            <span class="badge"
+                style="background: var(--{{ analysis.color }}); color: white; font-size: 1rem; padding: 0.5rem 1rem;">
+                {{ analysis.rating }}
+            </span>
+            <p class="text-sm text-muted mt-2">{{ analysis.message }}</p>
+        </div>
+
+        <h4 class="text-sm text-muted font-bold uppercase mb-4 border-top pt-4"
+            style="border-color: var(--border-color);">Strategy Constraints</h4>
+        <div class="grid grid-2">
+            <div>
+                <div class="text-muted text-sm">Planned Win Rate</div>
+                <div class="font-bold">{{ goal.win_rate }}%</div>
+            </div>
+            <div>
+                <div class="text-muted text-sm">Planned Risk</div>
+                <div class="font-bold text-danger">${{ goal.risk_per_trade }}</div>
+            </div>
+            <div>
+                <div class="text-muted text-sm">Planned Reward</div>
+                <div class="font-bold text-success">${{ goal.reward_per_trade }}</div>
+            </div>
+            <div>
+                <div class="text-muted text-sm">Deadline</div>
+                <div class="font-bold">{{ goal.deadline.strftime('%Y-%m-%d') if goal.deadline else 'None' }}</div>
+            </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-top" style="border-color: var(--border-color);">
+            <div class="text-muted text-sm">Average Risk Taken (Actual)</div>
+            <div class="font-bold {{ 'text-danger' if avg_risk > goal.risk_per_trade else 'text-success' }}">
+                ${{ avg_risk|round(2) }}
+                {% if avg_risk > goal.risk_per_trade %}
+                <span class="text-xs">(Exceeds Plan)</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3 class="mb-4 text-sm text-muted font-bold uppercase">Contributing Trades</h3>
+    {% if trades %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Pair</th>
+                    <th>Risk ($)</th>
+                    <th>P/L ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trade in trades %}
+                <tr>
+                    <td>{{ trade.date.strftime('%Y-%m-%d') }}</td>
+                    <td class="font-bold">{{ trade.pair }}</td>
+                    <td class="{{ 'text-danger' if (trade.risk_amount or 0) > goal.risk_per_trade else '' }}">
+                        {{ trade.risk_amount or '0.0' }}
+                    </td>
+                    <td class="{{ 'text-success' if (trade.profit_loss or 0) > 0 else 'text-danger' }}">
+                        {{ trade.profit_loss or '0.0' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No closed trades recorded for this plan yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% block title %}Notification Detail{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes modal-fade-in {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes modal-scale-up {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .animate-modal-fade-in {
+        animation: modal-fade-in 0.3s ease-out;
+    }
+
+    .animate-modal-scale-up {
+        animation: modal-scale-up 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    #search-modal {
+        backdrop-filter: blur(8px);
+    }
+
+    #modal-table-header th {
+        position: sticky;
+        top: 0;
+        background-color: #f8fafc;
+        z-index: 10;
+        box-shadow: 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="page-content">
+
+        <div class="container mx-auto mt-6 p-4 max-w-6xl">
+
+            <!-- Header -->
+            <div class="mb-6">
+                <h4 class="text-2xl font-semibold text-gray-800">{{ notification.verb|default:"Alert Notification" }}
+                </h4>
+                <p class="text-gray-500 text-sm mt-1">
+                    From: <strong>{{ notification.actor|default:"System" }}</strong> •
+                    Date: {{ notification.timestamp|date:"Y-m-d H:i:s T"|default:"Unknown" }}
+                </p>
+                <div class="mt-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                        {% if notification.data.severity == 'error' %}bg-red-500 text-white
+                        {% elif notification.data.severity == 'warning' %}bg-yellow-500 text-white
+                        {% elif notification.data.severity == 'info' %}bg-blue-500 text-white
+                        {% else %}bg-gray-500 text-white{% endif %}">
+                        {{ notification.data.severity|capfirst|default:"Info" }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="bg-white shadow-sm rounded-lg p-5 mb-6">
+                <p class="text-gray-700 leading-relaxed">
+                    {{ notification.description|safe|default:"No description available." }}
+                </p>
+            </div>
+
+            <!-- Alert Details - Interactive JSON Viewer -->
+            {% if notification.data.type == "alert" %}
+            <div class="bg-white border border-gray-200 shadow-md rounded-lg mb-6">
+                <div class="bg-gray-200 text-gray-800 p-4 rounded-t-lg font-semibold flex justify-between items-center">
+                    <span>Alert Details</span>
+                    <span class="text-xs text-gray-500 font-normal">
+                        Click on passport 🛂, phone 📱, email 📧, or account 🏦 numbers to search history
+                    </span>
+                </div>
+                <div class="p-6">
+                    <div id="json-viewer"
+                        class="border border-gray-100 rounded-lg p-4 bg-gray-50 text-sm overflow-auto max-h-96 font-mono">
+                        <!-- Interactive JSON rendered here -->
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Search Results Popup Modal -->
+            <div id="search-modal"
+                class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
+                onclick="handleBackdropClick(event)">
+                <div class="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col animate-modal-scale-up"
+                    onclick="event.stopPropagation()">
+                    <div
+                        class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-5 rounded-t-xl flex justify-between items-center">
+                        <div class="flex items-center gap-4">
+                            <span id="modal-icon" class="text-4xl">🔍</span>
+                            <div>
+                                <h3 id="modal-title" class="text-2xl font-bold">Search Results</h3>
+                                <p id="modal-subtitle" class="text-blue-100 text-sm mt-1"></p>
+                            </div>
+                        </div>
+                        <button onclick="closeSearchModal()"
+                            class="text-white hover:text-gray-200 text-4xl font-light leading-none">×</button>
+                    </div>
+
+                    <div class="flex-1 overflow-auto p-6">
+                        <!-- Loading -->
+                        <div id="modal-loading" class="text-center py-16">
+                            <div class="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600">
+                            </div>
+                            <p class="text-gray-600 mt-6 text-lg">Searching records...</p>
+                        </div>
+
+                        <!-- No Results -->
+                        <div id="modal-no-results" class="hidden text-center py-16">
+                            <span class="text-8xl opacity-30">📭</span>
+                            <p class="text-gray-600 mt-6 text-xl">No records found</p>
+                        </div>
+
+                        <!-- Results Table -->
+                        <div id="modal-results" class="hidden">
+                            <div class="overflow-x-auto rounded-lg border border-gray-300 shadow-sm">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr id="modal-table-header"></tr>
+                                    </thead>
+                                    <tbody id="modal-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 px-6 py-4 rounded-b-xl flex justify-between items-center border-t">
+                        <div id="modal-footer-info" class="text-sm text-gray-600"></div>
+                        <button onclick="closeSearchModal()"
+                            class="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Safe JSON Data -->
+            {{ notification.data.context|json_script:"alert-context" }}
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    // === All your existing code inside here ===
+
+                    // Modal Controls
+                    window.openSearchModal = function (type, value) {
+                        // ... (exact same as before)
+                    };
+
+                    window.closeSearchModal = function () {
+                        document.getElementById('search-modal').classList.add('hidden');
+                    };
+
+                    function handleBackdropClick(e) {
+                        if (e.target.id === 'search-modal') window.closeSearchModal();
+                    }
+
+                    document.addEventListener('keydown', e => {
+                        if (e.key === 'Escape') window.closeSearchModal();
+                    });
+
+                    // Render Results Table
+                    function renderResultsTable(hits) {
+                        // ... (keep exactly as you have it)
+                    }
+
+                    // Interactive JSON Viewer
+                    (function () {
+                        const container = document.getElementById('json-viewer');
+                        if (!container) {
+                            console.error('json-viewer element not found!');
+                            return;
+                        }
+
+                        const script = document.getElementById('alert-context');
+                        if (!script) {
+                            container.innerHTML = '<em class="text-red-500">Error: No alert context data found. Check if json_script worked.</em>';
+                            console.error('alert-context script tag missing');
+                            return;
+                        }
+
+                        let data;
+                        try {
+                            data = JSON.parse(script.textContent);
+                            console.log('Parsed context data:', data); // Debug
+                        } catch (e) {
+                            container.innerHTML = '<span class="text-red-600">Invalid JSON in context.</span>';
+                            console.error('JSON parse error:', e);
+                            return;
+                        }
+
+                        function isValidValue(val) {
+                            const str = String(val).trim().toLowerCase();
+                            return str && !['n/a', 'null', 'unknown', '-', ''].includes(str);
+                        }
+
+                        function detectType(key, value) {
+                            const lowerKey = key.toLowerCase();
+                            const strValue = String(value).trim();
+
+                            if (!isValidValue(value)) return null;
+
+                            if (lowerKey.includes('bucketkey') || lowerKey.includes('bucket_key')) {
+                                if (/^ACCT-/i.test(strValue) || /[A-Z]+-\w+-\d+/i.test(strValue)) return 'bankaccount';
+                                if (/^[A-Z][0-9]{7,12}$/.test(strValue)) return 'passport';
+                                if (/^(\+251|251|0)?9[0-9]{8}$/.test(strValue.replace(/[\s-]/g, ''))) return 'phone';
+                                return 'bankaccount';
+                            }
+
+                            if (lowerKey.includes('passport')) return 'passport';
+                            if (lowerKey.includes('phone') || lowerKey.includes('mobile')) return 'phone';
+                            if (lowerKey.includes('email')) return 'email';
+                            if (lowerKey.includes('account') || lowerKey.includes('bank')) return 'bankaccount';
+
+                            if (/^[A-Z][0-9]{7,12}$/.test(strValue)) return 'passport';
+                            if (/^(\+251|251|0)?9[0-9]{8}$/.test(strValue.replace(/[\s-]/g, ''))) return 'phone';
+                            if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(strValue)) return 'email';
+
+                            return null;
+                        }
+
+                        function render(obj, parent, level = 0) {
+                            const ul = document.createElement('ul');
+                            ul.className = level ? 'border-l border-gray-300 pl-4 mt-2' : 'list-none';
+                            ul.style.marginLeft = level ? '1.5rem' : '0';
+
+                            Object.keys(obj).forEach(k => {
+                                const v = obj[k];
+                                const li = document.createElement('li');
+                                li.className = 'py-1';
+
+                                if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+                                    const toggle = document.createElement('span');
+                                    toggle.textContent = '▶ ';
+                                    toggle.className = 'cursor-pointer text-blue-600 select-none hover:text-blue-800 inline-block w-6';
+                                    toggle.onclick = () => {
+                                        const open = child.style.display === 'block';
+                                        child.style.display = open ? 'none' : 'block';
+                                        toggle.textContent = open ? '▶ ' : '▼ ';
+                                    };
+
+                                    const keySpan = document.createElement('strong');
+                                    keySpan.textContent = k + ':';
+                                    keySpan.className = 'text-gray-800';
+
+                                    li.appendChild(toggle);
+                                    li.appendChild(keySpan);
+
+                                    const child = document.createElement('div');
+                                    child.style.display = 'none';
+                                    render(v, child, level + 1);
+                                    li.appendChild(child);
+                                } else {
+                                    const type = detectType(k, v);
+                                    const icons = { passport: '🛂 ', phone: '📱 ', email: '📧 ', bankaccount: '🏦 ' };
+                                    const keySpan = document.createElement('strong');
+                                    keySpan.innerHTML = (icons[type] || '') + k + ': ';
+
+                                    if (type && isValidValue(v)) {
+                                        const link = document.createElement('a');
+                                        link.textContent = v;
+                                        link.href = 'javascript:void(0)';
+                                        link.className = 'text-blue-600 hover:underline font-semibold cursor-pointer ml-1';
+                                        link.onclick = () => window.openSearchModal(type, v);
+                                        li.appendChild(keySpan);
+                                        li.appendChild(link);
+                                    } else {
+                                        li.appendChild(keySpan);
+                                        li.innerHTML += ` <span class="text-gray-600 ml-1">${JSON.stringify(v)}</span>`;
+                                    }
+                                }
+                                ul.appendChild(li);
+                            });
+
+                            parent.appendChild(ul);
+                        }
+
+                        render(data, container);
+                    })();
+                });
+            </script>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
